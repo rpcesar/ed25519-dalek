@@ -217,6 +217,48 @@ impl PublicKey {
         }
     }
 
+    ///
+    /// Simplification of verify_prehash which uses a slice for the message, rather than a digest
+    /// 
+    #[allow(non_snake_case)]
+    pub fn verify_prehashed_2(
+        &self,
+        prehashed_message: &[u8],
+        context: Option<&[u8]>,
+        signature: &ed25519::Signature,
+    ) -> Result<(), SignatureError>
+    {
+        let signature = InternalSignature::try_from(signature)?;
+
+        let mut h: Sha512 = Sha512::default();
+        let R: EdwardsPoint;
+        let k: Scalar;
+
+        let ctx: &[u8] = context.unwrap_or(b"");
+        debug_assert!(ctx.len() <= 255, "The context must not be longer than 255 octets.");
+
+        let minus_A: EdwardsPoint = -self.1;
+
+        h.update(b"SigEd25519 no Ed25519 collisions");
+        h.update(&[1]); // Ed25519ph
+        h.update(&[ctx.len() as u8]);
+        h.update(ctx);
+        h.update(signature.R.as_bytes());
+        h.update(self.as_bytes());
+        h.update(prehashed_message);
+
+        k = Scalar::from_hash(h);
+        R = EdwardsPoint::vartime_double_scalar_mul_basepoint(&k, &(minus_A), &signature.s);
+
+        if R.compress() == signature.R {
+            Ok(())
+        } else {
+            Err(InternalError::VerifyError.into())
+        }
+    }
+
+
+
     /// Strictly verify a signature on a message with this keypair's public key.
     ///
     /// # On The (Multiple) Sources of Malleability in Ed25519 Signatures
