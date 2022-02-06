@@ -247,6 +247,16 @@ impl Keypair {
         expanded.sign_prehashed(prehashed_message, &self.public, context).into()
     }
 
+    pub fn sign_prehashed_2(
+        &self,
+        prehashed_message: &[u8],
+        context: Option<&[u8]>,
+    ) -> Result<ed25519::Signature, SignatureError>
+    {
+        let expanded: ExpandedSecretKey = (&self.secret).into(); // xxx thanks i hate this
+        expanded.sign_prehashed_2(prehashed_message, &self.public, context).into()
+    }
+
     /// Verify a signature on a message with this keypair's public key.
     pub fn verify(
         &self,
