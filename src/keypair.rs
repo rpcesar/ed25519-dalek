@@ -247,6 +247,9 @@ impl Keypair {
         expanded.sign_prehashed(prehashed_message, &self.public, context).into()
     }
 
+    ///
+    /// same as sign prehash, but taking a slice instead of a digest
+    ///
     pub fn sign_prehashed_2(
         &self,
         prehashed_message: &[u8],

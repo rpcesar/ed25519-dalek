@@ -510,7 +510,7 @@ impl ExpandedSecretKey {
     /// custom version
     /// 
     #[allow(non_snake_case)]
-    pub fn sign_prehashed_2(
+    pub fn sign_prehashed_2<'a>(
         &self,
         prehashed_message: &[u8],
         public_key: &PublicKey,
